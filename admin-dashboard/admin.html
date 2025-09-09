@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Dynamics 365 Training</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2563eb;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #2563eb;
+        }
+
+        .stat-card h3 {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .tabs {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            color: #2563eb;
+            background: #f1f5f9;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .tab-content {
+            padding: 1.5rem;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pass {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-fail {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .export-btn {
+            background: #059669;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .export-btn:hover {
+            background: #047857;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 1rem;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #64748b;
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .module-performance {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .module-card {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .module-card h4 {
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .module-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            font-size: 14px;
+        }
+
+        .module-stat {
+            text-align: center;
+        }
+
+        .module-stat .label {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .module-stat .value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <div class="user-info">
+            <span id="adminName">Loading...</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="value" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Quiz Attempts</h3>
+                <div class="value" id="totalAttempts">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Average Score</h3>
+                <div class="value" id="averageScore">0%</div>
+            </div>
+            <div class="stat-card">
+                <h3>Recent Signups</h3>
+                <div class="value" id="recentSignups">0</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('quiz-results')">Quiz Results</button>
+                <button class="tab-button" onclick="showTab('users')">Users</button>
+                <button class="tab-button" onclick="showTab('modules')">Module Performance</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="quiz-results" class="tab-panel active">
+                    <button class="export-btn" onclick="exportResults()">Export CSV</button>
+                    <input type="text" class="search-box" placeholder="Search by username or module..." 
+                           onkeyup="filterQuizResults(this.value)">
+                    <div class="table-container">
+                        <table id="quizResultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Module</th>
+                                    <th>Score</th>
+                                    <th>Percentage</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quizResultsBody">
+                                <tr><td colspan="6" class="no-data">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="users" class="tab-panel">
+                    <input type="text" class="search-box" placeholder="Search users..." 
+                           onkeyup="filterUsers(this.value)">
+                    <div class="table-container">
+                        <table id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Company</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    <th>Last Login</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody">
+                                <tr><td colspan="7" class="no-data">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="modules" class="tab-panel">
+                    <div class="module-performance" id="modulePerformance">
+                        <div class="no-data">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../api/auth.js"></script>
+    <script>
+        let allQuizResults = [];
+        let allUsers = [];
+
+        // Check admin access
+        function checkAdminAccess() {
+            if (!window.authSystem.isLoggedIn()) {
+                window.location.href = '../auth-components/login.html';
+                return false;
+            }
+            
+            if (!window.authSystem.isAdmin()) {
+                alert('Admin access required');
+                window.location.href = '../index.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Initialize dashboard
+        function initDashboard() {
+            if (!checkAdminAccess()) return;
+
+            const currentUser = window.authSystem.getCurrentUser();
+            document.getElementById('adminName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+
+            loadAnalytics();
+            loadQuizResults();
+            loadUsers();
+            loadModulePerformance();
+        }
+
+        // Load analytics data
+        function loadAnalytics() {
+            try {
+                const analytics = window.authSystem.getAnalytics();
+                document.getElementById('totalUsers').textContent = analytics.totalUsers;
+                document.getElementById('totalAttempts').textContent = analytics.totalQuizAttempts;
+                document.getElementById('averageScore').textContent = analytics.averageScore + '%';
+                document.getElementById('recentSignups').textContent = analytics.recentSignups;
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Load quiz results
+        function loadQuizResults() {
+            try {
+                allQuizResults = window.authSystem.getAllQuizResults();
+                displayQuizResults(allQuizResults);
+            } catch (error) {
+                console.error('Error loading quiz results:', error);
+                document.getElementById('quizResultsBody').innerHTML = 
+                    '<tr><td colspan="6" class="no-data">Error loading quiz results</td></tr>';
+            }
+        }
+
+        // Display quiz results
+        function displayQuizResults(results) {
+            const tbody = document.getElementById('quizResultsBody');
+            
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="no-data">No quiz results found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = results.map(result => `
+                <tr>
+                    <td>${new Date(result.completed_at).toLocaleDateString()}</td>
+                    <td>${result.username}</td>
+                    <td>${result.module_id}</td>
+                    <td>${result.score}/${result.total_questions}</td>
+                    <td>${result.percentage}%</td>
+                    <td><span class="status-badge ${result.percentage >= 70 ? 'status-pass' : 'status-fail'}">
+                        ${result.percentage >= 70 ? 'Pass' : 'Fail'}
+                    </span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter quiz results
+        function filterQuizResults(searchTerm) {
+            const filtered = allQuizResults.filter(result => 
+                result.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                result.module_id.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            displayQuizResults(filtered);
+        }
+
+        // Load users
+        function loadUsers() {
+            try {
+                allUsers = window.authSystem.getAllUsers();
+                displayUsers(allUsers);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersBody').innerHTML = 
+                    '<tr><td colspan="7" class="no-data">Error loading users</td></tr>';
+            }
+        }
+
+        // Display users
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-data">No users found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.first_name} ${user.last_name}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.company || '-'}</td>
+                    <td><span class="status-badge ${user.role === 'admin' ? 'status-pass' : 'status-fail'}">
+                        ${user.role}
+                    </span></td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td>${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter users
+        function filterUsers(searchTerm) {
+            const filtered = allUsers.filter(user => 
+                user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (user.company && user.company.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+            displayUsers(filtered);
+        }
+
+        // Load module performance
+        function loadModulePerformance() {
+            try {
+                const analytics = window.authSystem.getAnalytics();
+                const container = document.getElementById('modulePerformance');
+                
+                if (analytics.modulePerformance.length === 0) {
+                    container.innerHTML = '<div class="no-data">No module performance data available</div>';
+                    return;
+                }
+
+                container.innerHTML = analytics.modulePerformance.map(module => `
+                    <div class="module-card">
+                        <h4>Module ${module.module_id}</h4>
+                        <div class="module-stats">
+                            <div class="module-stat">
+                                <div class="label">Attempts</div>
+                                <div class="value">${module.attempts}</div>
+                            </div>
+                            <div class="module-stat">
+                                <div class="label">Avg Score</div>
+                                <div class="value">${module.average_score}%</div>
+                            </div>
+                            <div class="module-stat">
+                                <div class="label">Pass Rate</div>
+                                <div class="value">${module.pass_rate}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading module performance:', error);
+                document.getElementById('modulePerformance').innerHTML = 
+                    '<div class="no-data">Error loading module performance</div>';
+            }
+        }
+
+        // Show tab
+        function showTab(tabId) {
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab panel
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Export results
+        function exportResults() {
+            try {
+                window.authSystem.exportQuizResults();
+            } catch (error) {
+                console.error('Error exporting results:', error);
+                alert('Error exporting results. Please try again.');
+            }
+        }
+
+        // Logout
+        function logout() {
+            window.authSystem.logout();
+            window.location.href = '../auth-components/login.html';
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
+
