@@ -629,35 +629,77 @@
         </div>
     </footer>
 
+    <script src="data/userManager.js"></script>
     <script>
-        // Check if user is logged in (simple demo logic)
+        // Check if user is logged in using the user management system
         function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const currentUser = userManager.getCurrentUser();
             const authButtons = document.getElementById('auth-buttons');
             const userWelcome = document.getElementById('user-welcome');
             
-            if (isLoggedIn) {
+            if (currentUser) {
                 authButtons.style.display = 'none';
                 userWelcome.style.display = 'block';
+                
+                // Update welcome message
+                const welcomeText = userWelcome.querySelector('span');
+                if (welcomeText) {
+                    welcomeText.textContent = `Welcome, ${currentUser.firstName || currentUser.name || 'User'}!`;
+                }
+                
+                // Add admin link if user is admin
+                if (userManager.isAdmin()) {
+                    const adminLink = document.createElement('a');
+                    adminLink.href = 'admin-dashboard/admin.html';
+                    adminLink.textContent = 'Admin Dashboard';
+                    adminLink.style.cssText = 'margin-left: 15px; color: #ffd700; text-decoration: none; font-weight: bold;';
+                    userWelcome.appendChild(adminLink);
+                }
             } else {
                 authButtons.style.display = 'flex';
                 userWelcome.style.display = 'none';
             }
         }
 
-        function showLogin() {
-            // Simple demo login
-            localStorage.setItem('userLoggedIn', 'true');
+        function logout() {
+            userManager.logout();
             checkLoginStatus();
-            alert('Welcome! You are now logged in.');
+            alert('You have been logged out successfully.');
+        }
+
+        function startFreeTraining() {
+            // Check if user is logged in
+            if (!userManager.isLoggedIn()) {
+                alert('Please create an account or login to start training.');
+                window.location.href = 'auth-components/signup.html';
+                return;
+            }
+            
+            // Scroll to modules section
+            document.getElementById('modules').scrollIntoView({ behavior: 'smooth' });
         }
 
         function startTraining() {
-            // Simple demo login for free training
-            localStorage.setItem('userLoggedIn', 'true');
-            checkLoginStatus();
-            document.getElementById('modules').scrollIntoView({ behavior: 'smooth' });
+            startFreeTraining();
         }
+
+        // Track module progress when user clicks on a module
+        function trackModuleAccess(moduleId) {
+            if (userManager.isLoggedIn()) {
+                const currentUser = userManager.getCurrentUser();
+                userManager.updateProgress(currentUser.email, moduleId);
+            }
+        }
+
+        // Add click tracking to module cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const moduleCards = document.querySelectorAll('.module-card');
+            moduleCards.forEach((card, index) => {
+                card.addEventListener('click', function() {
+                    trackModuleAccess(`module${index + 1}`);
+                });
+            });
+        });
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

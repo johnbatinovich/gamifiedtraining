@@ -239,6 +239,7 @@
         <a href="../index.html" class="back-link">← Back to Training Home</a>
     </div>
 
+    <script src="../data/userManager.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -246,32 +247,75 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
-            // Simple validation
+            // Validation
             if (!email || !password) {
                 alert('Please fill in all fields');
                 return;
             }
             
-            // For demo purposes, accept any email/password combination
-            // In a real app, this would validate against a backend
-            localStorage.setItem('userLoggedIn', 'true');
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('userName', email.split('@')[0]);
+            // Use the user management system
+            const result = userManager.loginUser(email, password);
             
-            alert('Login successful! Redirecting to training...');
-            window.location.href = '../index.html';
+            if (result.success) {
+                alert(result.message);
+                
+                // Redirect based on user type
+                if (result.isAdmin) {
+                    window.location.href = '../admin-dashboard/admin.html';
+                } else {
+                    window.location.href = '../index.html';
+                }
+            } else {
+                alert(result.message);
+            }
         });
         
         function demoLogin() {
-            // Set demo user data
-            localStorage.setItem('userLoggedIn', 'true');
-            localStorage.setItem('userEmail', 'demo@example.com');
-            localStorage.setItem('userName', 'Demo User');
-            localStorage.setItem('isDemo', 'true');
+            // Create a demo user if it doesn't exist
+            const demoUserData = {
+                firstName: 'Demo',
+                lastName: 'User',
+                email: 'demo@example.com',
+                company: 'Demo Company',
+                role: 'sales_executive',
+                password: 'demo123'
+            };
             
-            alert('Demo login successful! You can now access all training modules.');
-            window.location.href = '../index.html';
+            // Try to register demo user (will fail if already exists, which is fine)
+            userManager.registerUser(demoUserData);
+            
+            // Login as demo user
+            const result = userManager.loginUser('demo@example.com', 'demo123');
+            
+            if (result.success) {
+                alert('Demo login successful! You can now access all training modules.');
+                window.location.href = '../index.html';
+            } else {
+                alert('Demo login failed. Please try again.');
+            }
         }
+        
+        // Add admin login info
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminInfo = document.createElement('div');
+            adminInfo.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                font-size: 12px;
+                max-width: 200px;
+            `;
+            adminInfo.innerHTML = `
+                <strong>Admin Access:</strong><br>
+                Email: admin@d365training.com<br>
+                Password: admin123
+            `;
+            document.body.appendChild(adminInfo);
+        });
     </script>
 </body>
 </html>

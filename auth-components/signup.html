@@ -312,6 +312,7 @@
         <a href="../index.html" class="back-link">← Back to Training Home</a>
     </div>
 
+    <script src="../data/userManager.js"></script>
     <script>
         document.getElementById('signupForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -324,39 +325,37 @@
                 return;
             }
             
-            // Simulate account creation
+            // Create account using user management system
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.textContent = 'Creating Account...';
             submitBtn.disabled = true;
             
             setTimeout(() => {
-                // Store user data (in a real app, this would be sent to a backend)
-                const userData = {
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    email: data.email,
-                    company: data.company,
-                    role: data.role,
-                    registrationDate: new Date().toISOString()
-                };
+                const result = userManager.registerUser(data);
                 
-                localStorage.setItem('userData', JSON.stringify(userData));
-                localStorage.setItem('userLoggedIn', 'true');
-                localStorage.setItem('userEmail', data.email);
-                localStorage.setItem('userName', `${data.firstName} ${data.lastName}`);
-                
-                // Show success message
-                document.getElementById('successMessage').style.display = 'block';
-                
-                // Reset form
-                this.reset();
-                submitBtn.textContent = 'Create Account';
-                submitBtn.disabled = false;
-                
-                // Redirect after a moment
-                setTimeout(() => {
-                    window.location.href = '../index.html';
-                }, 2000);
+                if (result.success) {
+                    // Show success message
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    // Auto-login the user
+                    const loginResult = userManager.loginUser(data.email, data.password);
+                    
+                    if (loginResult.success) {
+                        // Reset form
+                        this.reset();
+                        submitBtn.textContent = 'Create Account';
+                        submitBtn.disabled = false;
+                        
+                        // Redirect after a moment
+                        setTimeout(() => {
+                            window.location.href = '../index.html';
+                        }, 2000);
+                    }
+                } else {
+                    alert(result.message);
+                    submitBtn.textContent = 'Create Account';
+                    submitBtn.disabled = false;
+                }
                 
             }, 1500);
         });

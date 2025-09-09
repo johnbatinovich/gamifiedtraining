@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Dynamics 365 Training</title>
+    <title>Admin Dashboard - D365 Training Platform</title>
     <style>
         * {
             margin: 0;
@@ -15,6 +15,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f8fafc;
             color: #1e293b;
+            line-height: 1.6;
         }
 
         .header {
@@ -25,6 +26,9 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .header h1 {
@@ -33,13 +37,20 @@
             font-weight: 700;
         }
 
-        .user-info {
+        .header-actions {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
 
-        .logout-btn {
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+        }
+
+        .logout-btn, .back-btn {
             background: #dc2626;
             color: white;
             padding: 8px 16px;
@@ -48,19 +59,30 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .back-btn {
+            background: #6366f1;
         }
 
         .logout-btn:hover {
             background: #b91c1c;
         }
 
+        .back-btn:hover {
+            background: #4f46e5;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        .stats-grid {
+        .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
@@ -69,10 +91,10 @@
 
         .stat-card {
             background: white;
+            border-radius: 12px;
             padding: 1.5rem;
-            border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #2563eb;
+            border: 1px solid #e2e8f0;
         }
 
         .stat-card h3 {
@@ -81,99 +103,120 @@
             font-weight: 500;
             margin-bottom: 0.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.5px;
         }
 
-        .stat-card .value {
+        .stat-value {
             font-size: 2rem;
             font-weight: 700;
             color: #1e293b;
+            margin-bottom: 0.5rem;
         }
 
-        .tabs {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .tab-buttons {
-            display: flex;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .tab-button {
-            flex: 1;
-            padding: 1rem;
-            background: none;
-            border: none;
-            cursor: pointer;
+        .stat-change {
             font-size: 14px;
-            font-weight: 500;
-            color: #64748b;
-            transition: all 0.2s;
+            color: #10b981;
         }
 
-        .tab-button.active {
-            color: #2563eb;
-            background: #f1f5f9;
-            border-bottom: 2px solid #2563eb;
-        }
-
-        .tab-content {
+        .section {
+            background: white;
+            border-radius: 12px;
             padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
         }
 
-        .tab-panel {
-            display: none;
+        .section h2 {
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
         }
 
-        .tab-panel.active {
-            display: block;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
+        .users-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
         }
 
-        th, td {
-            text-align: left;
+        .users-table th,
+        .users-table td {
             padding: 12px;
+            text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
 
-        th {
+        .users-table th {
             background: #f8fafc;
             font-weight: 600;
             color: #374151;
             font-size: 14px;
         }
 
-        td {
-            font-size: 14px;
+        .users-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s ease;
         }
 
         .status-badge {
             padding: 4px 8px;
-            border-radius: 4px;
+            border-radius: 12px;
             font-size: 12px;
             font-weight: 500;
         }
 
-        .status-pass {
+        .status-active {
             background: #dcfce7;
             color: #166534;
         }
 
-        .status-fail {
-            background: #fef2f2;
-            color: #dc2626;
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-in-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 200px;
         }
 
         .export-btn {
@@ -185,20 +228,31 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            margin-bottom: 1rem;
         }
 
         .export-btn:hover {
             background: #047857;
         }
 
-        .search-box {
-            width: 100%;
-            max-width: 300px;
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
             margin-bottom: 1rem;
         }
 
@@ -209,371 +263,459 @@
             font-style: italic;
         }
 
-        .module-performance {
-            display: grid;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .module-card {
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .module-card h4 {
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .module-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            font-size: 14px;
-        }
-
-        .module-stat {
-            text-align: center;
-        }
-
-        .module-stat .label {
-            color: #64748b;
-            font-size: 12px;
-        }
-
-        .module-stat .value {
-            font-weight: 600;
-            color: #1e293b;
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
             }
-
+            
             .header {
                 padding: 1rem;
                 flex-direction: column;
                 gap: 1rem;
             }
-
-            .tab-buttons {
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
                 flex-direction: column;
             }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
+            
+            .users-table {
+                font-size: 14px;
+            }
+            
+            .users-table th,
+            .users-table td {
+                padding: 8px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Admin Dashboard</h1>
-        <div class="user-info">
-            <span id="adminName">Loading...</span>
+    <header class="header">
+        <h1>🎯 D365 Training Admin Dashboard</h1>
+        <div class="header-actions">
+            <div class="user-info">
+                <span>👤</span>
+                <span id="adminName">Administrator</span>
+            </div>
+            <a href="../index.html" class="back-btn">← Back to Training</a>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
-    </div>
+    </header>
 
     <div class="container">
-        <div class="stats-grid">
+        <!-- Statistics Cards -->
+        <div class="dashboard-grid">
             <div class="stat-card">
                 <h3>Total Users</h3>
-                <div class="value" id="totalUsers">0</div>
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-change">Registered learners</div>
             </div>
             <div class="stat-card">
-                <h3>Quiz Attempts</h3>
-                <div class="value" id="totalAttempts">0</div>
+                <h3>Active Users</h3>
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-change">Currently learning</div>
             </div>
             <div class="stat-card">
-                <h3>Average Score</h3>
-                <div class="value" id="averageScore">0%</div>
+                <h3>Completed Courses</h3>
+                <div class="stat-value" id="completedCourses">0</div>
+                <div class="stat-change">100% progress</div>
             </div>
             <div class="stat-card">
-                <h3>Recent Signups</h3>
-                <div class="value" id="recentSignups">0</div>
+                <h3>Average Progress</h3>
+                <div class="stat-value" id="averageProgress">0%</div>
+                <div class="stat-change">Overall completion</div>
             </div>
         </div>
 
-        <div class="tabs">
-            <div class="tab-buttons">
-                <button class="tab-button active" onclick="showTab('quiz-results')">Quiz Results</button>
-                <button class="tab-button" onclick="showTab('users')">Users</button>
-                <button class="tab-button" onclick="showTab('modules')">Module Performance</button>
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 Role Distribution</div>
+                <div id="roleChart">
+                    <div class="no-data">No data available</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🏢 Company Distribution</div>
+                <div id="companyChart">
+                    <div class="no-data">No data available</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Management Section -->
+        <div class="section">
+            <h2>👥 User Management</h2>
+            
+            <div class="filters">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search users...">
+                <select class="filter-select" id="roleFilter">
+                    <option value="">All Roles</option>
+                    <option value="sales_executive">Sales Executive</option>
+                    <option value="account_manager">Account Manager</option>
+                    <option value="sales_manager">Sales Manager</option>
+                    <option value="media_planner">Media Planner</option>
+                    <option value="business_development">Business Development</option>
+                    <option value="other">Other</option>
+                </select>
+                <select class="filter-select" id="progressFilter">
+                    <option value="">All Progress</option>
+                    <option value="0">Not Started</option>
+                    <option value="1-25">1-25%</option>
+                    <option value="26-50">26-50%</option>
+                    <option value="51-75">51-75%</option>
+                    <option value="76-99">76-99%</option>
+                    <option value="100">Completed</option>
+                </select>
+                <button class="export-btn" onclick="exportUserData()">📥 Export Data</button>
             </div>
 
-            <div class="tab-content">
-                <div id="quiz-results" class="tab-panel active">
-                    <button class="export-btn" onclick="exportResults()">Export CSV</button>
-                    <input type="text" class="search-box" placeholder="Search by username or module..." 
-                           onkeyup="filterQuizResults(this.value)">
-                    <div class="table-container">
-                        <table id="quizResultsTable">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>User</th>
-                                    <th>Module</th>
-                                    <th>Score</th>
-                                    <th>Percentage</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="quizResultsBody">
-                                <tr><td colspan="6" class="no-data">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div style="overflow-x: auto;">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Company</th>
+                            <th>Role</th>
+                            <th>Progress</th>
+                            <th>Last Activity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" class="no-data">Loading user data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div id="users" class="tab-panel">
-                    <input type="text" class="search-box" placeholder="Search users..." 
-                           onkeyup="filterUsers(this.value)">
-                    <div class="table-container">
-                        <table id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Company</th>
-                                    <th>Role</th>
-                                    <th>Joined</th>
-                                    <th>Last Login</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersBody">
-                                <tr><td colspan="7" class="no-data">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div id="modules" class="tab-panel">
-                    <div class="module-performance" id="modulePerformance">
-                        <div class="no-data">Loading...</div>
-                    </div>
-                </div>
+        <!-- Detailed Progress Section -->
+        <div class="section">
+            <h2>📈 Detailed Progress Analytics</h2>
+            <div id="progressAnalytics">
+                <div class="no-data">Loading analytics...</div>
             </div>
         </div>
     </div>
 
-    <script src="../api/auth.js"></script>
+    <script src="../data/userManager.js"></script>
     <script>
-        let allQuizResults = [];
-        let allUsers = [];
-
         // Check admin access
         function checkAdminAccess() {
-            if (!window.authSystem.isLoggedIn()) {
+            if (!userManager.isLoggedIn() || !userManager.isAdmin()) {
+                alert('Access denied. Admin privileges required.');
                 window.location.href = '../auth-components/login.html';
                 return false;
             }
             
-            if (!window.authSystem.isAdmin()) {
-                alert('Admin access required');
-                window.location.href = '../index.html';
-                return false;
-            }
-            
+            const currentUser = userManager.getCurrentUser();
+            document.getElementById('adminName').textContent = currentUser.name || 'Administrator';
             return true;
         }
 
-        // Initialize dashboard
-        function initDashboard() {
-            if (!checkAdminAccess()) return;
-
-            const currentUser = window.authSystem.getCurrentUser();
-            document.getElementById('adminName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
-
-            loadAnalytics();
-            loadQuizResults();
-            loadUsers();
-            loadModulePerformance();
-        }
-
-        // Load analytics data
-        function loadAnalytics() {
-            try {
-                const analytics = window.authSystem.getAnalytics();
-                document.getElementById('totalUsers').textContent = analytics.totalUsers;
-                document.getElementById('totalAttempts').textContent = analytics.totalQuizAttempts;
-                document.getElementById('averageScore').textContent = analytics.averageScore + '%';
-                document.getElementById('recentSignups').textContent = analytics.recentSignups;
-            } catch (error) {
-                console.error('Error loading analytics:', error);
-            }
-        }
-
-        // Load quiz results
-        function loadQuizResults() {
-            try {
-                allQuizResults = window.authSystem.getAllQuizResults();
-                displayQuizResults(allQuizResults);
-            } catch (error) {
-                console.error('Error loading quiz results:', error);
-                document.getElementById('quizResultsBody').innerHTML = 
-                    '<tr><td colspan="6" class="no-data">Error loading quiz results</td></tr>';
-            }
-        }
-
-        // Display quiz results
-        function displayQuizResults(results) {
-            const tbody = document.getElementById('quizResultsBody');
+        // Load dashboard data
+        function loadDashboardData() {
+            const statsResult = userManager.getUserStatistics();
+            const usersResult = userManager.getAllUsers();
             
-            if (results.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="no-data">No quiz results found</td></tr>';
+            if (!statsResult.success || !usersResult.success) {
+                console.error('Failed to load dashboard data');
                 return;
             }
-
-            tbody.innerHTML = results.map(result => `
-                <tr>
-                    <td>${new Date(result.completed_at).toLocaleDateString()}</td>
-                    <td>${result.username}</td>
-                    <td>${result.module_id}</td>
-                    <td>${result.score}/${result.total_questions}</td>
-                    <td>${result.percentage}%</td>
-                    <td><span class="status-badge ${result.percentage >= 70 ? 'status-pass' : 'status-fail'}">
-                        ${result.percentage >= 70 ? 'Pass' : 'Fail'}
-                    </span></td>
-                </tr>
-            `).join('');
-        }
-
-        // Filter quiz results
-        function filterQuizResults(searchTerm) {
-            const filtered = allQuizResults.filter(result => 
-                result.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                result.module_id.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            displayQuizResults(filtered);
-        }
-
-        // Load users
-        function loadUsers() {
-            try {
-                allUsers = window.authSystem.getAllUsers();
-                displayUsers(allUsers);
-            } catch (error) {
-                console.error('Error loading users:', error);
-                document.getElementById('usersBody').innerHTML = 
-                    '<tr><td colspan="7" class="no-data">Error loading users</td></tr>';
-            }
-        }
-
-        // Display users
-        function displayUsers(users) {
-            const tbody = document.getElementById('usersBody');
             
-            if (users.length === 0) {
+            const stats = statsResult.stats;
+            const users = usersResult.users;
+            
+            // Update statistics cards
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('activeUsers').textContent = stats.activeUsers;
+            document.getElementById('completedCourses').textContent = stats.completedCourses;
+            document.getElementById('averageProgress').textContent = stats.averageProgress + '%';
+            
+            // Load users table
+            loadUsersTable(users);
+            
+            // Load charts
+            loadRoleChart(stats.roleDistribution);
+            loadCompanyChart(stats.companyDistribution);
+            
+            // Load progress analytics
+            loadProgressAnalytics(users);
+        }
+
+        // Load users table
+        function loadUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            if (Object.keys(users).length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" class="no-data">No users found</td></tr>';
                 return;
             }
-
-            tbody.innerHTML = users.map(user => `
-                <tr>
-                    <td>${user.first_name} ${user.last_name}</td>
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
-                    <td>${user.company || '-'}</td>
-                    <td><span class="status-badge ${user.role === 'admin' ? 'status-pass' : 'status-fail'}">
-                        ${user.role}
-                    </span></td>
-                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    <td>${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Filter users
-        function filterUsers(searchTerm) {
-            const filtered = allUsers.filter(user => 
-                user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (user.company && user.company.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-            displayUsers(filtered);
-        }
-
-        // Load module performance
-        function loadModulePerformance() {
-            try {
-                const analytics = window.authSystem.getAnalytics();
-                const container = document.getElementById('modulePerformance');
+            
+            for (let email in users) {
+                const user = users[email];
+                const progress = user.progress || { overallProgress: 0, lastActivity: user.registrationDate };
                 
-                if (analytics.modulePerformance.length === 0) {
-                    container.innerHTML = '<div class="no-data">No module performance data available</div>';
-                    return;
-                }
-
-                container.innerHTML = analytics.modulePerformance.map(module => `
-                    <div class="module-card">
-                        <h4>Module ${module.module_id}</h4>
-                        <div class="module-stats">
-                            <div class="module-stat">
-                                <div class="label">Attempts</div>
-                                <div class="value">${module.attempts}</div>
-                            </div>
-                            <div class="module-stat">
-                                <div class="label">Avg Score</div>
-                                <div class="value">${module.average_score}%</div>
-                            </div>
-                            <div class="module-stat">
-                                <div class="label">Pass Rate</div>
-                                <div class="value">${module.pass_rate}%</div>
-                            </div>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.email}</td>
+                    <td>${user.company}</td>
+                    <td>${user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress.overallProgress}%"></div>
                         </div>
+                        <small>${progress.overallProgress}%</small>
+                    </td>
+                    <td>${new Date(progress.lastActivity).toLocaleDateString()}</td>
+                    <td>
+                        <span class="status-badge ${getStatusClass(progress.overallProgress)}">
+                            ${getStatusText(progress.overallProgress)}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Get status class based on progress
+        function getStatusClass(progress) {
+            if (progress === 0) return 'status-active';
+            if (progress === 100) return 'status-completed';
+            return 'status-in-progress';
+        }
+
+        // Get status text based on progress
+        function getStatusText(progress) {
+            if (progress === 0) return 'Not Started';
+            if (progress === 100) return 'Completed';
+            return 'In Progress';
+        }
+
+        // Load role distribution chart
+        function loadRoleChart(roleDistribution) {
+            const chartContainer = document.getElementById('roleChart');
+            chartContainer.innerHTML = '';
+            
+            if (Object.keys(roleDistribution).length === 0) {
+                chartContainer.innerHTML = '<div class="no-data">No role data available</div>';
+                return;
+            }
+            
+            const total = Object.values(roleDistribution).reduce((sum, count) => sum + count, 0);
+            
+            for (let role in roleDistribution) {
+                const count = roleDistribution[role];
+                const percentage = Math.round((count / total) * 100);
+                const roleName = role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0;';
+                item.innerHTML = `
+                    <span>${roleName}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px;">
+                            <div style="width: ${percentage}%; height: 100%; background: #3b82f6; border-radius: 4px;"></div>
+                        </div>
+                        <span style="font-weight: 600; min-width: 40px;">${count}</span>
                     </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading module performance:', error);
-                document.getElementById('modulePerformance').innerHTML = 
-                    '<div class="no-data">Error loading module performance</div>';
+                `;
+                chartContainer.appendChild(item);
             }
         }
 
-        // Show tab
-        function showTab(tabId) {
-            // Hide all tab panels
-            document.querySelectorAll('.tab-panel').forEach(panel => {
-                panel.classList.remove('active');
+        // Load company distribution chart
+        function loadCompanyChart(companyDistribution) {
+            const chartContainer = document.getElementById('companyChart');
+            chartContainer.innerHTML = '';
+            
+            if (Object.keys(companyDistribution).length === 0) {
+                chartContainer.innerHTML = '<div class="no-data">No company data available</div>';
+                return;
+            }
+            
+            const total = Object.values(companyDistribution).reduce((sum, count) => sum + count, 0);
+            const sortedCompanies = Object.entries(companyDistribution)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10); // Show top 10 companies
+            
+            sortedCompanies.forEach(([company, count]) => {
+                const percentage = Math.round((count / total) * 100);
+                
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0;';
+                item.innerHTML = `
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${company}">${company}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px;">
+                            <div style="width: ${percentage}%; height: 100%; background: #10b981; border-radius: 4px;"></div>
+                        </div>
+                        <span style="font-weight: 600; min-width: 40px;">${count}</span>
+                    </div>
+                `;
+                chartContainer.appendChild(item);
             });
-            
-            // Remove active class from all buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            // Show selected tab panel
-            document.getElementById(tabId).classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
         }
 
-        // Export results
-        function exportResults() {
-            try {
-                window.authSystem.exportQuizResults();
-            } catch (error) {
-                console.error('Error exporting results:', error);
-                alert('Error exporting results. Please try again.');
+        // Load progress analytics
+        function loadProgressAnalytics(users) {
+            const container = document.getElementById('progressAnalytics');
+            container.innerHTML = '';
+            
+            const progressRanges = {
+                'Not Started (0%)': 0,
+                'Getting Started (1-25%)': 0,
+                'Making Progress (26-50%)': 0,
+                'Halfway There (51-75%)': 0,
+                'Almost Done (76-99%)': 0,
+                'Completed (100%)': 0
+            };
+            
+            for (let email in users) {
+                const user = users[email];
+                const progress = user.progress ? user.progress.overallProgress : 0;
+                
+                if (progress === 0) progressRanges['Not Started (0%)']++;
+                else if (progress <= 25) progressRanges['Getting Started (1-25%)']++;
+                else if (progress <= 50) progressRanges['Making Progress (26-50%)']++;
+                else if (progress <= 75) progressRanges['Halfway There (51-75%)']++;
+                else if (progress < 100) progressRanges['Almost Done (76-99%)']++;
+                else progressRanges['Completed (100%)']++;
+            }
+            
+            const total = Object.values(progressRanges).reduce((sum, count) => sum + count, 0);
+            
+            if (total === 0) {
+                container.innerHTML = '<div class="no-data">No progress data available</div>';
+                return;
+            }
+            
+            for (let range in progressRanges) {
+                const count = progressRanges[range];
+                const percentage = Math.round((count / total) * 100);
+                
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e2e8f0;';
+                item.innerHTML = `
+                    <span style="font-weight: 500;">${range}</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 150px; height: 10px; background: #e2e8f0; border-radius: 5px;">
+                            <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 5px;"></div>
+                        </div>
+                        <span style="font-weight: 600; min-width: 60px;">${count} users</span>
+                    </div>
+                `;
+                container.appendChild(item);
             }
         }
 
-        // Logout
+        // Export user data
+        function exportUserData() {
+            const usersResult = userManager.getAllUsers();
+            if (!usersResult.success) {
+                alert('Failed to export user data');
+                return;
+            }
+            
+            const users = usersResult.users;
+            let csvContent = 'Name,Email,Company,Role,Progress,Registration Date,Last Activity\n';
+            
+            for (let email in users) {
+                const user = users[email];
+                const progress = user.progress || { overallProgress: 0, lastActivity: user.registrationDate };
+                
+                csvContent += `"${user.firstName} ${user.lastName}","${user.email}","${user.company}","${user.role}","${progress.overallProgress}%","${new Date(user.registrationDate).toLocaleDateString()}","${new Date(progress.lastActivity).toLocaleDateString()}"\n`;
+            }
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `d365_training_users_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Logout function
         function logout() {
-            window.authSystem.logout();
-            window.location.href = '../auth-components/login.html';
+            if (confirm('Are you sure you want to logout?')) {
+                userManager.logout();
+                window.location.href = '../auth-components/login.html';
+            }
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initDashboard);
+        // Search and filter functionality
+        document.getElementById('searchInput').addEventListener('input', filterUsers);
+        document.getElementById('roleFilter').addEventListener('change', filterUsers);
+        document.getElementById('progressFilter').addEventListener('change', filterUsers);
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const progressFilter = document.getElementById('progressFilter').value;
+            
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            
+            rows.forEach(row => {
+                if (row.cells.length < 7) return; // Skip header or empty rows
+                
+                const name = row.cells[0].textContent.toLowerCase();
+                const email = row.cells[1].textContent.toLowerCase();
+                const company = row.cells[2].textContent.toLowerCase();
+                const role = row.cells[3].textContent.toLowerCase().replace(' ', '_');
+                const progressText = row.cells[4].textContent;
+                const progress = parseInt(progressText.match(/\d+/)[0]);
+                
+                let show = true;
+                
+                // Search filter
+                if (searchTerm && !name.includes(searchTerm) && !email.includes(searchTerm) && !company.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                // Role filter
+                if (roleFilter && !role.includes(roleFilter.replace('_', ' '))) {
+                    show = false;
+                }
+                
+                // Progress filter
+                if (progressFilter) {
+                    if (progressFilter === '0' && progress !== 0) show = false;
+                    else if (progressFilter === '1-25' && (progress < 1 || progress > 25)) show = false;
+                    else if (progressFilter === '26-50' && (progress < 26 || progress > 50)) show = false;
+                    else if (progressFilter === '51-75' && (progress < 51 || progress > 75)) show = false;
+                    else if (progressFilter === '76-99' && (progress < 76 || progress > 99)) show = false;
+                    else if (progressFilter === '100' && progress !== 100) show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkAdminAccess()) {
+                loadDashboardData();
+                
+                // Refresh data every 30 seconds
+                setInterval(loadDashboardData, 30000);
+            }
+        });
     </script>
 </body>
 </html>
