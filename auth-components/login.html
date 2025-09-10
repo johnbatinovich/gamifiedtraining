@@ -257,20 +257,34 @@
             const result = userManager.loginUser(email, password);
             
             if (result.success) {
-                alert(result.message);
+                // Show success message briefly
+                const successMsg = document.createElement('div');
+                successMsg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:15px 30px;border-radius:8px;z-index:1000;font-weight:bold;';
+                successMsg.textContent = result.message + ' - Redirecting...';
+                document.body.appendChild(successMsg);
                 
-                // Redirect based on user type
-                if (result.isAdmin) {
-                    window.location.href = '../admin-dashboard/admin.html';
-                } else {
-                    window.location.href = '../index.html';
-                }
+                // Redirect after a short delay
+                setTimeout(() => {
+                    if (result.isAdmin) {
+                        window.location.href = '../admin-dashboard/admin.html';
+                    } else {
+                        window.location.href = '../index.html';
+                    }
+                }, 1000);
             } else {
-                alert(result.message);
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f44336;color:white;padding:15px 30px;border-radius:8px;z-index:1000;font-weight:bold;';
+                errorMsg.textContent = result.message;
+                document.body.appendChild(errorMsg);
+                
+                // Remove error message after 3 seconds
+                setTimeout(() => {
+                    document.body.removeChild(errorMsg);
+                }, 3000);
             }
         });
-        
-        function demoLogin() {
+           function demoLogin() {
             // Create a demo user if it doesn't exist
             const demoUserData = {
                 firstName: 'Demo',
@@ -281,17 +295,23 @@
                 password: 'demo123'
             };
             
-            // Try to register demo user (will fail if already exists, which is fine)
+            // Register demo user (will only create if doesn't exist)
             userManager.registerUser(demoUserData);
             
             // Login as demo user
             const result = userManager.loginUser('demo@example.com', 'demo123');
             
             if (result.success) {
-                alert('Demo login successful! You can now access all training modules.');
-                window.location.href = '../index.html';
-            } else {
-                alert('Demo login failed. Please try again.');
+                // Show success message briefly
+                const successMsg = document.createElement('div');
+                successMsg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:15px 30px;border-radius:8px;z-index:1000;font-weight:bold;';
+                successMsg.textContent = 'Demo login successful - Redirecting...';
+                document.body.appendChild(successMsg);
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
             }
         }
         
